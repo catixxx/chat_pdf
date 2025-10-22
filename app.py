@@ -9,43 +9,124 @@ from langchain.llms import OpenAI
 from langchain.chains.question_answering import load_qa_chain
 import platform
 
-# App title and presentation
-st.title('Generación Aumentada por Recuperación (RAG) 💬')
-st.write("Versión de Python:", platform.python_version())
+# --- 🌸 Estilos femeninos en lilas y celestes ---
+st.markdown("""
+    <style>
+        /* Fondo general */
+        .stApp {
+            background-color: #e8f5ff; /* Celeste muy suave */
+            font-family: 'Poppins', sans-serif;
+        }
 
-# Load and display image
+        /* Título principal */
+        h1 {
+            color: #8e7cc3; /* Lila elegante */
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.3em;
+            margin-bottom: 0.2em;
+        }
+
+        /* Subtítulos */
+        h2, h3 {
+            color: #7a6ccf;
+            font-weight: 600;
+        }
+
+        /* Barra lateral */
+        section[data-testid="stSidebar"] {
+            background-color: #f2e9fb;
+            border-radius: 15px;
+            color: #6f52b3;
+        }
+
+        /* Cuadros de texto */
+        .stTextInput > div > div > input, textarea {
+            border-radius: 10px !important;
+            border: 1px solid #bda9e0 !important;
+            background-color: #ffffff !important;
+        }
+
+        /* Botones */
+        button[kind="primary"] {
+            background-color: #9cc9f0 !important;
+            color: white !important;
+            border-radius: 10px !important;
+            border: none !important;
+            font-weight: 600 !important;
+        }
+
+        button[kind="primary"]:hover {
+            background-color: #8ebbe0 !important;
+        }
+
+        /* Imagen centrada */
+        [data-testid="stImage"] img {
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 15px;
+            box-shadow: 0px 0px 10px rgba(140, 180, 255, 0.5);
+        }
+
+        /* Cuadros de información */
+        .stAlert {
+            border-radius: 12px !important;
+        }
+
+        /* Texto y markdown */
+        .stMarkdown p {
+            color: #4b4b7a;
+            font-size: 1.05em;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
+# --- 💬 Título y descripción ---
+st.title('💜 Generación Aumentada por Recuperación (RAG)')
+st.write(f"Versión de Python: **{platform.python_version()}**")
+
+# --- Imagen decorativa ---
 try:
     image = Image.open('Chat_pdf.png')
     st.image(image, width=350)
 except Exception as e:
     st.warning(f"No se pudo cargar la imagen: {e}")
 
-# Sidebar information
+# --- Barra lateral informativa ---
 with st.sidebar:
-    st.subheader("Este Agente te ayudará a realizar análisis sobre el PDF cargado")
+    st.subheader("🌷 Asistente de Análisis de PDF 🌷")
+    st.markdown("""
+    Este agente inteligente te ayudará a:
+    - Analizar el contenido de un documento PDF  
+    - Responder preguntas basadas en el texto  
+    - Resumir y explicar fragmentos específicos  
 
-# Get API key from user
-ke = st.text_input('Ingresa tu Clave de OpenAI', type="password")
+    💡 *Solo necesitas subir tu archivo y escribir tu pregunta.*
+    """)
+
+# --- Clave de API ---
+ke = st.text_input('🔑 Ingresa tu Clave de OpenAI', type="password")
 if ke:
     os.environ['OPENAI_API_KEY'] = ke
 else:
-    st.warning("Por favor ingresa tu clave de API de OpenAI para continuar")
+    st.warning("Por favor ingresa tu clave de API de OpenAI para continuar 💬")
 
-# PDF uploader
-pdf = st.file_uploader("Carga el archivo PDF", type="pdf")
+# --- Cargar PDF ---
+pdf = st.file_uploader("📄 Carga el archivo PDF", type="pdf")
 
-# Process the PDF if uploaded
+# --- Procesamiento del PDF ---
 if pdf is not None and ke:
     try:
-        # Extract text from PDF
+        # Extraer texto
         pdf_reader = PdfReader(pdf)
         text = ""
         for page in pdf_reader.pages:
             text += page.extract_text()
         
-        st.info(f"Texto extraído: {len(text)} caracteres")
+        st.info(f"✨ Texto extraído: {len(text)} caracteres")
         
-        # Split text into chunks
+        # Dividir texto
         text_splitter = CharacterTextSplitter(
             separator="\n",
             chunk_size=500,
@@ -53,40 +134,34 @@ if pdf is not None and ke:
             length_function=len
         )
         chunks = text_splitter.split_text(text)
-        st.success(f"Documento dividido en {len(chunks)} fragmentos")
-        
-        # Create embeddings and knowledge base
+        st.success(f"🌸 Documento dividido en {len(chunks)} fragmentos")
+
+        # Crear embeddings
         embeddings = OpenAIEmbeddings()
         knowledge_base = FAISS.from_texts(chunks, embeddings)
-        
-        # User question interface
-        st.subheader("Escribe qué quieres saber sobre el documento")
+
+        # Interfaz de pregunta
+        st.subheader("💬 Escribe qué quieres saber sobre el documento")
         user_question = st.text_area(" ", placeholder="Escribe tu pregunta aquí...")
-        
-        # Process question when submitted
+
+        # Procesar pregunta
         if user_question:
             docs = knowledge_base.similarity_search(user_question)
-            
-            # Use a current model instead of deprecated text-davinci-003
-            # Options: "gpt-3.5-turbo-instruct" or "gpt-4-turbo-preview" depending on your API access
             llm = OpenAI(temperature=0, model_name="gpt-4o")
-            
-            # Load QA chain
             chain = load_qa_chain(llm, chain_type="stuff")
-            
-            # Run the chain
             response = chain.run(input_documents=docs, question=user_question)
-            
-            # Display the response
-            st.markdown("### Respuesta:")
-            st.markdown(response)
-                
+
+            # Mostrar respuesta
+            st.markdown("### 🌈 Respuesta del asistente:")
+            st.markdown(f"<div style='background-color:#f2e9fb; padding:15px; border-radius:10px; color:#4b4b7a;'>{response}</div>", unsafe_allow_html=True)
+
     except Exception as e:
-        st.error(f"Error al procesar el PDF: {str(e)}")
-        # Add detailed error for debugging
+        st.error(f"⚠️ Error al procesar el PDF: {str(e)}")
         import traceback
         st.error(traceback.format_exc())
+
 elif pdf is not None and not ke:
-    st.warning("Por favor ingresa tu clave de API de OpenAI para continuar")
+    st.warning("🔒 Por favor ingresa tu clave de API de OpenAI para continuar.")
 else:
-    st.info("Por favor carga un archivo PDF para comenzar")
+    st.info("💠 Carga un archivo PDF para comenzar tu análisis.")
+a comenzar")
