@@ -164,4 +164,3 @@ elif pdf is not None and not ke:
     st.warning("🔒 Por favor ingresa tu clave de API de OpenAI para continuar.")
 else:
     st.info("💠 Carga un archivo PDF para comenzar tu análisis.")
-a comenzar")
